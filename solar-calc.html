@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solar Cost Estimator — Pakistan 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #151b23;
+    --surface2: #1c2430;
+    --border: #2a3441;
+    --amber: #f59e0b;
+    --amber-light: #fcd34d;
+    --amber-dim: #92400e;
+    --green: #10b981;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --faint: #1e2a35;
+    --glow: rgba(245,158,11,0.12);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--amber), #f97316);
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-size: 18px;
+    box-shadow: 0 0 20px rgba(245,158,11,0.4);
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; letter-spacing: -0.3px; }
+  .logo-text span { color: var(--amber); }
+  .header-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.6;
+  }
+  .header-meta b { color: var(--amber); }
+
+  /* ── TABS ── */
+  .tab-bar {
+    display: flex; gap: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    padding: 14px 22px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--amber); border-bottom-color: var(--amber); }
+
+  /* ── LAYOUT ── */
+  .main { max-width: 1200px; margin: 0 auto; padding: 28px 24px 60px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── SECTION TITLES ── */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── GRID ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media(max-width:820px) { .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr 1fr; } }
+  @media(max-width:520px) { .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; } }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  /* ── FORM CONTROLS ── */
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 7px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .field select, .field input[type="number"], .field input[type="range"] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+  .field select:focus, .field input[type="number"]:focus {
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px var(--glow);
+  }
+  .field input[type="range"] {
+    padding: 6px 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  .range-row { display: flex; align-items: center; gap: 12px; }
+  .range-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--amber);
+    min-width: 60px;
+    text-align: right;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--amber);
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(245,158,11,0.5);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--amber);
+    cursor: pointer;
+    border: none;
+  }
+
+  /* ── OPTION CARDS (radio-style) ── */
+  .option-grid { display: grid; gap: 10px; }
+  .option-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .option-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .opt-card {
+    position: relative;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .opt-card input[type="radio"] { position: absolute; opacity: 0; width: 0; }
+  .opt-card:hover { border-color: var(--amber-dim); }
+  .opt-card.selected {
+    border-color: var(--amber);
+    background: var(--faint);
+    box-shadow: 0 0 0 1px var(--amber), 0 0 20px var(--glow);
+  }
+  .opt-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .opt-detail {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .opt-price {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--amber);
+    margin-top: 6px;
+    font-weight: 600;
+  }
+  .opt-badge {
+    display: inline-block;
+    background: var(--amber);
+    color: #000;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+  }
+
+  /* ── CALCULATE BUTTON ── */
+  .calc-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--amber), #f97316);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 24px;
+    box-shadow: 0 4px 20px rgba(245,158,11,0.35);
+  }
+  .calc-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,158,11,0.5); }
+  .calc-btn:active { transform: translateY(0); }
+
+  /* ── STAT CARDS ── */
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--glow), transparent);
+    pointer-events: none;
+  }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--amber);
+    line-height: 1;
+  }
+  .stat-unit {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .stat-sub {
+    font-size: 12px;
+    color: var(--green);
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  /* ── COST BREAKDOWN TABLE ── */
+  .breakdown-table { width: 100%; border-collapse: collapse; }
+  .breakdown-table tr { border-bottom: 1px solid var(--border); }
+  .breakdown-table tr:last-child { border-bottom: none; }
+  .breakdown-table td { padding: 11px 4px; font-size: 13.5px; }
+  .breakdown-table td:last-child {
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    color: var(--amber);
+  }
+  .breakdown-table .subtotal td {
+    font-weight: 700;
+    color: var(--amber-light);
+    border-top: 1px solid var(--amber-dim);
+  }
+  .breakdown-table .total td {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--amber-light);
+    padding-top: 14px;
+  }
+  .breakdown-table .item-icon { margin-right: 8px; opacity: 0.7; }
+
+  /* ── SUNSHINE TABLE ── */
+  .sun-table { width: 100%; border-collapse: collapse; }
+  .sun-table th {
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .sun-table td { padding: 10px; font-size: 13px; border-bottom: 1px solid var(--faint); }
+  .sun-table td:not(:first-child) {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+  }
+  .sun-highlight { color: var(--amber); }
+  .sun-dim { color: var(--blue); }
+
+  /* ── MONTHLY CHART ── */
+  .monthly-chart { width: 100%; height: 180px; position: relative; margin-top: 10px; }
+  .chart-bars { display: flex; align-items: flex-end; height: 140px; gap: 6px; padding: 0 4px; }
+  .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .chart-bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    min-height: 4px;
+    position: relative;
+  }
+  .bar-solar { background: linear-gradient(180deg, var(--amber), #d97706); }
+  .bar-wapda { background: linear-gradient(180deg, var(--blue), #1d4ed8); opacity: 0.7; }
+  .chart-label { font-size: 9px; color: var(--muted); letter-spacing: 0.3px; }
+  .chart-legend {
+    display: flex; gap: 20px; margin-top: 12px;
+    font-size: 11px; color: var(--muted);
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 5px; }
+
+  /* ── PROGRESS / PAYBACK ── */
+  .payback-vis {
+    position: relative;
+    background: var(--surface2);
+    border-radius: 8px;
+    height: 32px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .payback-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--amber), var(--green));
+    border-radius: 8px;
+    transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+    display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;
+  }
+  .payback-fill span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #000;
+  }
+
+  /* ── WAPDA SLAB ── */
+  .slab-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .slab-table th {
+    padding: 7px 10px;
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .slab-table td { padding: 8px 10px; border-bottom: 1px solid var(--faint); }
+  .slab-table .active-slab { background: var(--faint); }
+  .slab-table .active-slab td:first-child { border-left: 2px solid var(--amber); }
+
+  /* ── INFO BOX ── */
+  .info-box {
+    background: var(--faint);
+    border: 1px solid var(--amber-dim);
+    border-left: 3px solid var(--amber);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    color: #94a3b8;
+    line-height: 1.6;
+    margin-top: 14px;
+  }
+  .info-box b { color: var(--amber-light); }
+
+  /* ── TOGGLE ── */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--faint);
+  }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-label { font-size: 13px; }
+  .toggle-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .toggle {
+    position: relative; width: 42px; height: 24px; cursor: pointer;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0;
+    background: var(--border);
+    border-radius: 12px;
+    transition: 0.2s;
+  }
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    left: 3px; top: 3px;
+    background: var(--text);
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+  .toggle input:checked + .toggle-slider { background: var(--amber); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+  /* ── ANALYSIS METRICS ── */
+  .metric-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid var(--faint);
+  }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-name { font-size: 13.5px; }
+  .metric-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .metric-val.good { color: var(--green); }
+  .metric-val.warn { color: var(--amber); }
+  .metric-val.bad { color: var(--red); }
+
+  /* ── CITY SUNSHINE CARDS ── */
+  .city-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .city-card:hover, .city-card.selected {
+    border-color: var(--amber);
+    background: var(--faint);
+  }
+  .city-card .city-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .city-sun { font-size: 11px; color: var(--muted); line-height: 1.8; }
+  .city-sun b { color: var(--amber); }
+
+  /* ── PLACEHOLDER / EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-state .big-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.4; }
+  .empty-state h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .empty-state p { font-size: 13px; }
+
+  /* ── RESPONSIVE HELPERS ── */
+  .mt-4 { margin-top: 16px; }
+  .mt-6 { margin-top: 24px; }
+  .gap-row { display: flex; gap: 14px; }
+  .gap-row > * { flex: 1; }
+  @media(max-width:520px) { .gap-row { flex-direction: column; } }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">☀️</div>
+    <div>
+      <div class="logo-text">Solar<span>PK</span> Estimator</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    Benchmark: <b>May 2026</b><br>
+    Rates updated for Pakistan market
+  </div>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('config')">⚙️ Configure System</button>
+  <button class="tab-btn" onclick="switchTab('results')">📊 Cost & Production</button>
+  <button class="tab-btn" onclick="switchTab('analysis')">📈 Analysis & ROI</button>
+  <button class="tab-btn" onclick="switchTab('reference')">📋 Reference Data</button>
+</div>
+
+<!-- ════════════════════════════════════════
+     TAB 1 — CONFIGURATION
+════════════════════════════════════════ -->
+<div class="main">
+<div id="tab-config" class="tab-panel active">
+
+  <div class="section-title">City & Location</div>
+  <div class="grid-4" id="cityGrid" style="margin-bottom:28px;">
+    <!-- filled by JS -->
+  </div>
+
+  <div class="grid-2">
+    <!-- LEFT COL -->
+    <div>
+      <div class="section-title">System Size</div>
+      <div class="card">
+        <div class="field">
+          <label>System Capacity (kW)</label>
+          <div class="range-row">
+            <input type="range" id="systemKW" min="1" max="30" step="0.5" value="5" oninput="updateRange()">
+            <div class="range-val" id="kwVal">5 kW</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px;">
+            <span>1 kW</span><span>10 kW</span><span>20 kW</span><span>30 kW</span>
+          </div>
+        </div>
+        <div class="info-box">
+          <b>Quick Guide:</b> 1 kW ≈ 3–4 units/day · 3 kW = avg home · 5 kW = medium home ·
+          10 kW = large home / small business · 20+ kW = commercial
+        </div>
+      </div>
+
+      <div class="section-title mt-6">Solar Panels</div>
+      <div class="card">
+        <div class="option-grid cols-2" id="panelOptions"></div>
+        <div class="field" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+          <label>Panel Brand Quality / Price Level</label>
+          <div class="range-row">
+            <input type="range" id="panelQuality" min="0.7" max="1.4" step="0.1" value="1.0" oninput="updateQualityRange('panel')">
+            <div class="range-val" id="panelQualityVal" style="min-width:90px;">Standard</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px;">
+            <span>Budget<br><span style="color:var(--amber);">0.7×</span></span>
+            <span>Standard<br><span style="color:var(--amber);">1.0×</span></span>
+            <span>Premium<br><span style="color:var(--amber);">1.4×</span></span>
+          </div>
+          <div class="info-box" style="margin-top:10px;font-size:11px;">
+            <b>Budget (0.7–0.8×):</b> Local assembly, basic Chinese panels<br>
+            <b>Standard (0.9–1.1×):</b> JA Solar, Jinko, Canadian Solar, Longi<br>
+            <b>Premium (1.2–1.4×):</b> SunPower, LG, Panasonic, Q.CELLS
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title mt-6">Inverter Type</div>
+      <div class="card">
+        <div class="option-grid" id="inverterOptions"></div>
+        <div class="field" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+          <label>Inverter Brand Quality / Price Level</label>
+          <div class="range-row">
+            <input type="range" id="inverterQuality" min="0.7" max="1.6" step="0.1" value="1.0" oninput="updateQualityRange('inverter')">
+            <div class="range-val" id="inverterQualityVal" style="min-width:90px;">Standard</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px;">
+            <span>Budget<br><span style="color:var(--amber);">0.7×</span></span>
+            <span>Standard<br><span style="color:var(--amber);">1.0×</span></span>
+            <span>Premium<br><span style="color:var(--amber);">1.6×</span></span>
+          </div>
+          <div class="info-box" style="margin-top:10px;font-size:11px;">
+            <b>Budget (0.7–0.8×):</b> Pakistani brands (Max Power, Homage)<br>
+            <b>Standard (0.9–1.2×):</b> Goodwe, Growatt, Sofar, Solis<br>
+            <b>Premium (1.3–1.6×):</b> Huawei, SMA, Fronius, SolarEdge
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COL -->
+    <div>
+      <div class="section-title">Batteries (Optional)</div>
+      <div class="card">
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Include Battery Bank</div>
+            <div class="toggle-sub">For backup / off-grid capability</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="batteryToggle" onchange="toggleBattery()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div id="batteryConfig" style="display:none;margin-top:14px;">
+          <div class="option-grid cols-2" id="batteryOptions"></div>
+          <div class="field" style="margin-top:14px;">
+            <label>Number of Batteries</label>
+            <div class="range-row">
+              <input type="range" id="battCount" min="1" max="16" step="1" value="4" oninput="updateBattRange()">
+              <div class="range-val" id="battVal">4</div>
+            </div>
+          </div>
+          <div class="field" style="padding-top:14px;border-top:1px solid var(--border);">
+            <label>Battery Brand Quality / Price Level</label>
+            <div class="range-row">
+              <input type="range" id="batteryQuality" min="0.75" max="1.35" step="0.05" value="1.0" oninput="updateQualityRange('battery')">
+              <div class="range-val" id="batteryQualityVal" style="min-width:90px;">Standard</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px;">
+              <span>Budget<br><span style="color:var(--amber);">0.75×</span></span>
+              <span>Standard<br><span style="color:var(--amber);">1.0×</span></span>
+              <span>Premium<br><span style="color:var(--amber);">1.35×</span></span>
+            </div>
+            <div class="info-box" style="margin-top:10px;font-size:11px;">
+              <b>Budget (0.75–0.85×):</b> Local brands, basic AGM/Tubular<br>
+              <b>Standard (0.95–1.1×):</b> Phoenix, Osaka, Exide, Daewoo<br>
+              <b>Premium (1.15–1.35×):</b> Trojan, CATL, BYD, Tesla Powerwall
+            </div>
+          </div>
+        </div>
+        <div class="info-box" style="margin-top:12px;">
+          <b>Tip:</b> Hybrid inverter + 4×200Ah lithium is the most popular setup in Lahore 2026 for 5kW systems.
+          Battery required for off-grid inverter.
+        </div>
+      </div>
+
+      <div class="section-title mt-6">Additional Costs</div>
+      <div class="card">
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Net Metering Registration</div>
+            <div class="toggle-sub">DISCO fee — sell excess to grid (PKR 28,000)</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="netMeterToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Structure / Mounting</div>
+            <div class="toggle-sub">Hot-dip galvanized steel mounting (PKR 20/W)</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="structureToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Wiring & DC Isolators</div>
+            <div class="toggle-sub">DC cables, connectors, isolators (PKR 15/W)</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="wiringToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Installation Labour</div>
+            <div class="toggle-sub">Certified installer team (PKR 12/W)</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="installToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="field" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+          <label>Installation & Components Quality</label>
+          <div class="range-row">
+            <input type="range" id="installQuality" min="0.7" max="1.4" step="0.1" value="1.0" oninput="updateQualityRange('install')">
+            <div class="range-val" id="installQualityVal" style="min-width:90px;">Standard</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px;">
+            <span>Budget<br><span style="color:var(--amber);">0.7×</span></span>
+            <span>Standard<br><span style="color:var(--amber);">1.0×</span></span>
+            <span>Premium<br><span style="color:var(--amber);">1.4×</span></span>
+          </div>
+          <div class="info-box" style="margin-top:10px;font-size:11px;">
+            <b>Budget (0.7–0.8×):</b> Basic components, self-install/helper<br>
+            <b>Standard (0.9–1.1×):</b> Mid-grade materials, experienced team<br>
+            <b>Premium (1.2–1.4×):</b> Premium cables/breakers, certified engineers
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title mt-6">WAPDA Usage</div>
+      <div class="card">
+        <div class="field">
+          <label>Current Monthly WAPDA Bill (PKR)</label>
+          <input type="number" id="wapdaBill" value="38000" min="0" step="500">
+        </div>
+        <div class="field">
+          <label>Monthly Units Consumed (kWh)</label>
+          <input type="number" id="wapdaUnits" value="600" min="0" step="10">
+        </div>
+        <div class="info-box">
+          <b>Tip:</b> Check your latest WAPDA/LESCO bill. The "total amount" is your monthly bill. 
+          Units consumed shown as "Current Reading - Previous Reading". 
+          Avg home: 400-800 units/month = PKR 25K-50K bill.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">⚡ Calculate Solar Installation Cost</button>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     TAB 2 — RESULTS
+════════════════════════════════════════ -->
+<div id="tab-results" class="tab-panel">
+  <div id="resultsContent">
+    <div class="empty-state">
+      <div class="big-icon">☀️</div>
+      <h3>Configure your system first</h3>
+      <p>Go to Configure System, set your preferences, then click Calculate.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     TAB 3 — ANALYSIS
+════════════════════════════════════════ -->
+<div id="tab-analysis" class="tab-panel">
+  <div id="analysisContent">
+    <div class="empty-state">
+      <div class="big-icon">📈</div>
+      <h3>Run a calculation first</h3>
+      <p>Configure your system and calculate to see ROI and payback analysis.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     TAB 4 — REFERENCE
+════════════════════════════════════════ -->
+<div id="tab-reference" class="tab-panel">
+  <div class="section-title">WAPDA Electricity Tariff Slabs — May 2026</div>
+  <div class="card">
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;"><b>⚠️ These are BASE rates only.</b> Actual bills are 2.4–2.8× higher after adding FPA (Fuel Price Adjustment ~PKR 10/unit), GST 17.5%, income tax, quarterly adjustments, fixed charges, TV fee, meter rent, and surcharges.</p>
+    <table class="slab-table">
+      <tr><th>Slab</th><th>Units/Month</th><th>Base Rate (PKR/unit)</th><th>Actual Eff. Rate*</th></tr>
+      <tr><td>Protected</td><td>Up to 100</td><td>PKR 12.00</td><td>~PKR 32</td></tr>
+      <tr><td>Slab 1</td><td>101–200</td><td>PKR 18.50</td><td>~PKR 48</td></tr>
+      <tr><td>Slab 2</td><td>201–300</td><td>PKR 23.50</td><td>~PKR 58</td></tr>
+      <tr><td>Slab 3</td><td>301–400</td><td>PKR 28.00</td><td>~PKR 65</td></tr>
+      <tr><td>Slab 4</td><td>401–500</td><td>PKR 30.00</td><td>~PKR 68</td></tr>
+      <tr><td>Slab 5</td><td>501–600</td><td>PKR 33.00</td><td>~PKR 70</td></tr>
+      <tr><td>Slab 6</td><td>601–700</td><td>PKR 36.00</td><td>~PKR 72</td></tr>
+      <tr><td>Slab 7</td><td>700+</td><td>PKR 38.00</td><td>~PKR 74</td></tr>
+    </table>
+    <div class="info-box">
+      <b>Example Reality Check:</b> 
+      • 300 units: Base PKR 5,400 → Actual bill ~PKR 15,000<br>
+      • 500 units: Base PKR 14,400 → Actual bill ~PKR 32,000<br>
+      • 600 units: Base PKR 17,700 → Actual bill ~PKR 40,000<br>
+      • 800 units: Base PKR 25,300 → Actual bill ~PKR 58,000<br><br>
+      <b>*Effective rate</b> = (Total bill ÷ Units) after all charges. This calculator uses the ACTUAL bill amounts, not base rates.
+    </div>
+  </div>
+
+  <div class="section-title mt-6">Pakistan City — Peak Sunshine Hours</div>
+  <div class="card">
+    <table class="sun-table">
+      <tr>
+        <th>City</th>
+        <th>Summer Peak (hrs)</th>
+        <th>Winter Peak (hrs)</th>
+        <th>Annual Avg</th>
+        <th>Panel Efficiency Factor</th>
+      </tr>
+      <tr><td>Lahore</td><td class="sun-highlight">8.5</td><td class="sun-dim">5.5</td><td>7.0</td><td>0.80</td></tr>
+      <tr><td>Karachi</td><td class="sun-highlight">9.5</td><td class="sun-dim">7.5</td><td>8.5</td><td>0.82</td></tr>
+      <tr><td>Islamabad</td><td class="sun-highlight">8.0</td><td class="sun-dim">5.0</td><td>6.5</td><td>0.79</td></tr>
+      <tr><td>Multan</td><td class="sun-highlight">9.5</td><td class="sun-dim">6.5</td><td>8.0</td><td>0.81</td></tr>
+      <tr><td>Faisalabad</td><td class="sun-highlight">8.5</td><td class="sun-dim">5.5</td><td>7.0</td><td>0.80</td></tr>
+      <tr><td>Peshawar</td><td class="sun-highlight">8.5</td><td class="sun-dim">5.0</td><td>6.8</td><td>0.80</td></tr>
+      <tr><td>Quetta</td><td class="sun-highlight">10.0</td><td class="sun-dim">7.0</td><td>8.5</td><td>0.83</td></tr>
+      <tr><td>Hyderabad</td><td class="sun-highlight">9.0</td><td class="sun-dim">7.0</td><td>8.0</td><td>0.81</td></tr>
+      <tr><td>Sialkot</td><td class="sun-highlight">8.0</td><td class="sun-dim">5.0</td><td>6.5</td><td>0.79</td></tr>
+    </table>
+    <div class="info-box"><b>Peak Sunshine Hours</b> = hours/day when irradiance ≥ 1,000 W/m². Actual production accounts for temperature losses (~15%), soiling (~3%), wiring losses (~2%), inverter efficiency (~96%), and orientation/tilt losses (~5%).</div>
+  </div>
+
+  <div class="section-title mt-6">Solar Panel Types — May 2026 Pakistan Market Prices</div>
+  <div class="card">
+    <table class="slab-table">
+      <tr><th>Type</th><th>Efficiency</th><th>Price/Watt (PKR)</th><th>Lifespan</th><th>Best For</th></tr>
+      <tr><td>Polycrystalline</td><td>16–17%</td><td>PKR 48–55</td><td>20–25 yrs</td><td>Budget installs, large spaces</td></tr>
+      <tr><td>Mono PERC</td><td>18–20%</td><td>PKR 58–68</td><td>25–30 yrs</td><td>Most popular, balanced cost/perf</td></tr>
+      <tr><td>Bifacial Mono PERC</td><td>19–21%</td><td>PKR 68–80</td><td>25–30 yrs</td><td>Open rooftops with reflective surface</td></tr>
+      <tr><td>TOPCon (N-Type)</td><td>21–23%</td><td>PKR 78–90</td><td>30+ yrs</td><td>Premium, limited space</td></tr>
+    </table>
+  </div>
+
+  <div class="section-title mt-6">Net Metering — Key Facts</div>
+  <div class="card">
+    <div class="info-box" style="margin-top:0;">
+      <b>Net metering</b> allows you to feed excess solar power back to the national grid and get credit on your electricity bill at a government-set buy-back rate.<br><br>
+      <b>Buy-back rate (May 2026):</b> ~PKR 22–24/unit (varies by DISCO)<br>
+      <b>Eligibility:</b> Any system 1kW–1MW. Must have on-grid or hybrid inverter.<br>
+      <b>Registration:</b> Apply to your DISCO (LESCO, FESCO, GEPCO etc.). Process takes 1–3 months.<br>
+      <b>One-time cost:</b> PKR 20,000–35,000 (DISCO processing + bi-directional meter)<br>
+      <b>Annual benefit:</b> Can reduce or eliminate your WAPDA bill. Excess units carried forward monthly.
+    </div>
+  </div>
+</div>
+
+</div><!-- end .main -->
+
+<script>
+// ════════════════════════════════════════
+//  DATA
+// ════════════════════════════════════════
+const CITIES = [
+  { id:'lahore',    name:'Lahore',     sumSun:8.5, winSun:5.5, avgSun:7.0, eff:0.80 },
+  { id:'karachi',   name:'Karachi',    sumSun:9.5, winSun:7.5, avgSun:8.5, eff:0.82 },
+  { id:'islamabad', name:'Islamabad',  sumSun:8.0, winSun:5.0, avgSun:6.5, eff:0.79 },
+  { id:'multan',    name:'Multan',     sumSun:9.5, winSun:6.5, avgSun:8.0, eff:0.81 },
+  { id:'faisalabad',name:'Faisalabad', sumSun:8.5, winSun:5.5, avgSun:7.0, eff:0.80 },
+  { id:'peshawar',  name:'Peshawar',   sumSun:8.5, winSun:5.0, avgSun:6.8, eff:0.80 },
+  { id:'quetta',    name:'Quetta',     sumSun:10.0, winSun:7.0, avgSun:8.5, eff:0.83 },
+  { id:'hyderabad', name:'Hyderabad',  sumSun:9.0, winSun:7.0, avgSun:8.0, eff:0.81 },
+];
+
+const PANELS = [
+  { id:'poly', name:'Polycrystalline', detail:'16–17% efficiency · Budget-friendly', pricePerW:52, life:22, badge:'' },
+  { id:'mono', name:'Mono PERC', detail:'18–20% eff · Most popular in PK', pricePerW:63, life:27, badge:'POPULAR' },
+  { id:'bifacial', name:'Bifacial PERC', detail:'19–21% eff · Front+rear generation', pricePerW:74, life:27, badge:'' },
+  { id:'topcon', name:'TOPCon N-Type', detail:'21–23% eff · Premium, long life', pricePerW:84, life:30, badge:'PREMIUM' },
+];
+
+const INVERTERS = [
+  { id:'hybrid', name:'Hybrid Inverter', detail:'Works on solar + battery + grid. Best for load-shedding areas. Supports net metering.', priceBase:85000, pricePerKW:9500, badge:'BEST CHOICE' },
+  { id:'ongrid', name:'On-Grid (Grid-Tie)', detail:'Grid-tied only. No battery support. Best payback if minimal load shedding.', priceBase:45000, pricePerKW:6500, badge:'' },
+  { id:'offgrid', name:'Off-Grid / UPS Type', detail:'Fully independent. Battery required. No net metering. Good for areas with severe load shedding.', priceBase:55000, pricePerKW:7500, badge:'' },
+];
+
+const BATTERIES = [
+  { id:'lithium', name:'Lithium (LiFePO4)', detail:'Long life 3,000+ cycles · Deep discharge · Lightweight', priceEach:58000, badge:'BEST LIFE' },
+  { id:'agm', name:'AGM / Gel', detail:'Maintenance-free · 500–800 cycles · Mid-range', priceEach:32000, badge:'' },
+  { id:'tubular', name:'Tubular Lead-Acid', detail:'Most affordable · Requires maintenance · 300–600 cycles', priceEach:26000, badge:'BUDGET' },
+];
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+// Sunshine multipliers per month (relative to annual avg, normalized)
+const MONTH_SUN_FACTOR = [0.75, 0.82, 0.92, 1.05, 1.12, 1.08, 0.95, 0.93, 1.00, 0.98, 0.82, 0.72];
+
+// WAPDA slabs (BASE rates before surcharges)
+const SLABS = [
+  { max:100,  rate:12.00 },
+  { max:200,  rate:18.50 },
+  { max:300,  rate:23.50 },
+  { max:400,  rate:28.00 },
+  { max:500,  rate:30.00 },
+  { max:600,  rate:33.00 },
+  { max:700,  rate:36.00 },
+  { max:99999,rate:38.00 },
+];
+
+function calcWapdaBill(units) {
+  let total = 0, rem = units;
+  let prev = 0;
+  for (const s of SLABS) {
+    let in_slab = Math.min(rem, s.max - prev);
+    if (in_slab <= 0) break;
+    total += in_slab * s.rate;
+    rem -= in_slab;
+    prev = s.max;
+    if (rem <= 0) break;
+  }
+  
+  // REALISTIC Pakistan bill calculation (May 2026)
+  // Base tariff is just starting point - actual bill includes:
+  // • Fuel Price Adjustment (FPA): +8-12 PKR/unit
+  // • GST 17-18%
+  // • Income tax (if bill > 25K): 5-15%
+  // • Quarterly Tariff Adjustment (QTA): +2-4 PKR/unit
+  // • Fixed charges: PKR 200-1000/month
+  // • Neelum-Jhelum surcharge, TV fee, meter rent
+  // Result: Total bill = 2.4-2.8× base calculation
+  
+  const fixedCharges = Math.min(units * 1.5, 1500); // Scales with usage
+  const fpaAndQta = units * 10.5; // FPA+QTA avg ~10.5 PKR/unit in 2026
+  const subtotal = total + fpaAndQta + fixedCharges;
+  const gst = subtotal * 0.175; // GST 17.5%
+  const incomeTax = total > 20000 ? subtotal * 0.075 : 0; // Income tax if high bill
+  
+  return subtotal + gst + incomeTax;
+}
+
+// ════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════
+let state = {
+  city: 'lahore',
+  panel: 'mono',
+  inverter: 'hybrid',
+  battery: 'lithium',
+  battCount: 4,
+  batteryEnabled: false,
+  netMeter: true,
+  structure: true,
+  wiring: true,
+  install: true,
+  systemKW: 5,
+  wapdaBill: 38000,
+  wapdaUnits: 600,
+  panelQuality: 1.0,
+  inverterQuality: 1.0,
+  batteryQuality: 1.0,
+  installQuality: 1.0,
+};
+
+let calcResult = null;
+
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+function init() {
+  renderCities();
+  renderOptions('panelOptions', PANELS, 'panel', state.panel);
+  renderOptions('inverterOptions', INVERTERS, 'inverter', state.inverter);
+  renderOptions('batteryOptions', BATTERIES, 'battery', state.battery);
+}
+
+function renderCities() {
+  const grid = document.getElementById('cityGrid');
+  grid.innerHTML = CITIES.map(c => `
+    <div class="city-card${c.id===state.city?' selected':''}" onclick="selectCity('${c.id}')">
+      <div class="city-name">${c.name}</div>
+      <div class="city-sun">
+        ☀️ Summer: <b>${c.sumSun}h</b><br>
+        🌤️ Winter: <b>${c.winSun}h</b><br>
+        📅 Avg: <b>${c.avgSun}h</b>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderOptions(containerId, data, type, selected) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = data.map(item => `
+    <div class="opt-card${item.id===selected?' selected':''}" onclick="selectOption('${type}','${item.id}','${containerId}',this)">
+      <input type="radio" name="${type}" ${item.id===selected?'checked':''}>
+      ${item.badge ? `<div class="opt-badge">${item.badge}</div>` : ''}
+      <div class="opt-name">${item.name}</div>
+      <div class="opt-detail">${item.detail}</div>
+      <div class="opt-price">${formatPrice(item.pricePerW || item.priceBase || item.priceEach)} ${item.pricePerW ? '/watt' : item.priceBase ? 'base' : '/unit'}</div>
+    </div>
+  `).join('');
+}
+
+function selectCity(id) {
+  state.city = id;
+  renderCities();
+}
+
+function selectOption(type, id, containerId, el) {
+  state[type] = id;
+  document.querySelectorAll(`#${containerId} .opt-card`).forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function updateRange() {
+  state.systemKW = parseFloat(document.getElementById('systemKW').value);
+  document.getElementById('kwVal').textContent = state.systemKW + ' kW';
+}
+
+function updateBattRange() {
+  state.battCount = parseInt(document.getElementById('battCount').value);
+  document.getElementById('battVal').textContent = state.battCount;
+}
+
+function toggleBattery() {
+  state.batteryEnabled = document.getElementById('batteryToggle').checked;
+  document.getElementById('batteryConfig').style.display = state.batteryEnabled ? 'block' : 'none';
+}
+
+function updateQualityRange(type) {
+  const val = parseFloat(document.getElementById(type + 'Quality').value);
+  state[type + 'Quality'] = val;
+  
+  const labels = {
+    0.7: 'Budget', 0.75: 'Budget', 0.8: 'Budget+',
+    0.9: 'Standard−', 1.0: 'Standard', 1.1: 'Standard+',
+    1.2: 'Premium−', 1.3: 'Premium', 1.4: 'Premium+',
+    1.5: 'Premium++', 1.6: 'Top-tier'
+  };
+  
+  const label = labels[val] || `${val.toFixed(1)}×`;
+  document.getElementById(type + 'QualityVal').textContent = label;
+}
+
+// ════════════════════════════════════════
+//  CALCULATE
+// ════════════════════════════════════════
+function calculate() {
+  // Read state from DOM
+  state.systemKW   = parseFloat(document.getElementById('systemKW').value);
+  state.wapdaBill  = parseFloat(document.getElementById('wapdaBill').value) || 0;
+  state.wapdaUnits = parseFloat(document.getElementById('wapdaUnits').value) || 0;
+  state.netMeter   = document.getElementById('netMeterToggle').checked;
+  state.structure  = document.getElementById('structureToggle').checked;
+  state.wiring     = document.getElementById('wiringToggle').checked;
+  state.install    = document.getElementById('installToggle').checked;
+  state.batteryEnabled = document.getElementById('batteryToggle').checked;
+  state.battCount  = parseInt(document.getElementById('battCount').value) || 4;
+  
+  // Read quality multipliers
+  state.panelQuality    = parseFloat(document.getElementById('panelQuality').value);
+  state.inverterQuality = parseFloat(document.getElementById('inverterQuality').value);
+  state.batteryQuality  = parseFloat(document.getElementById('batteryQuality').value);
+  state.installQuality  = parseFloat(document.getElementById('installQuality').value);
+
+  const city    = CITIES.find(c => c.id === state.city);
+  const panel   = PANELS.find(p => p.id === state.panel);
+  const inv     = INVERTERS.find(i => i.id === state.inverter);
+  const batt    = BATTERIES.find(b => b.id === state.battery);
+  const watts   = state.systemKW * 1000;
+
+  // ── COSTS (with quality multipliers) ──
+  const panelCost   = watts * panel.pricePerW * state.panelQuality;
+  const invCost     = (inv.priceBase + inv.pricePerKW * state.systemKW) * state.inverterQuality;
+  const battCost    = state.batteryEnabled ? batt.priceEach * state.battCount * state.batteryQuality : 0;
+  const netCost     = state.netMeter ? 28000 : 0;
+  const structCost  = state.structure ? watts * 20 * state.installQuality : 0;
+  const wireCost    = state.wiring ? watts * 15 * state.installQuality : 0;
+  const installCost = state.install ? watts * 12 * state.installQuality : 0;
+  const miscCost    = watts * 5 * state.installQuality; // transport, connectors etc.
+  const totalCost   = panelCost + invCost + battCost + netCost + structCost + wireCost + installCost + miscCost;
+
+  // ── PRODUCTION ──
+  // Daily = kW * sunshine_hours * system_efficiency (temp + soiling + wiring + inverter losses)
+  const systemEff   = 0.78; // overall derate factor
+  const sumDaily    = state.systemKW * city.sumSun * systemEff;
+  const winDaily    = state.systemKW * city.winSun * systemEff;
+  const avgDaily    = state.systemKW * city.avgSun * systemEff;
+  const annualUnits = avgDaily * 365;
+  
+  // Monthly production
+  const monthly = MONTH_SUN_FACTOR.map((f, i) => {
+    const baseHrs = city.avgSun;
+    const adjHrs  = i >= 4 && i <= 8 ? city.sumSun : (i <= 1 || i >= 10 ? city.winSun : baseHrs);
+    const hrs     = adjHrs * f * (12 / MONTH_SUN_FACTOR.reduce((a,b)=>a+b,0)); // normalize
+    const days    = [31,28,31,30,31,30,31,31,30,31,30,31][i];
+    return state.systemKW * adjHrs * f * systemEff * days;
+  });
+
+  // ── WAPDA COMPARISON ──
+  const currentMonthlyBill   = state.wapdaBill || calcWapdaBill(state.wapdaUnits);
+  const currentYearlyBill    = currentMonthlyBill * 12;
+  
+  // After solar: remaining WAPDA units
+  const avgMonthlyProduction = annualUnits / 12;
+  const remainingUnits       = Math.max(0, state.wapdaUnits - avgMonthlyProduction);
+  const afterSolarBill       = calcWapdaBill(remainingUnits);
+  const monthlySaving        = currentMonthlyBill - afterSolarBill;
+  const yearlySaving         = monthlySaving * 12;
+
+  // Net metering: excess units sold back
+  const excessUnits   = Math.max(0, avgMonthlyProduction - state.wapdaUnits);
+  const buybackRate   = 23; // PKR/unit
+  const netMeterGain  = state.netMeter ? excessUnits * buybackRate : 0;
+  const totalYearBenefit = yearlySaving + netMeterGain * 12;
+
+  // ── PAYBACK (calculated in months) ──
+  // Account for 5% annual electricity price escalation
+  let cumSaving = 0, paybackMonths = null;
+  const yearlyBenefits = [];
+  const monthlyBenefit = totalYearBenefit / 12;
+  
+  // Calculate month-by-month for precise payback
+  for (let m = 1; m <= 360; m++) { // 30 years = 360 months
+    const year = Math.floor((m - 1) / 12) + 1;
+    const escalation = Math.pow(1.05, year - 1);
+    const mb = monthlyBenefit * escalation;
+    cumSaving += mb;
+    
+    if (!paybackMonths && cumSaving >= totalCost) {
+      paybackMonths = m;
+    }
+    
+    // Store yearly summaries
+    if (m % 12 === 0) {
+      const y = m / 12;
+      yearlyBenefits.push({ 
+        year: y, 
+        benefit: totalYearBenefit * Math.pow(1.05, y - 1), 
+        cumulative: cumSaving 
+      });
+    }
+  }
+  if (!paybackMonths) paybackMonths = '>360';
+
+  const roi25yr = ((yearlyBenefits[24]?.cumulative - totalCost) / totalCost * 100).toFixed(0);
+
+  calcResult = {
+    city, panel, inv, batt, watts, state: {...state},
+    panelCost, invCost, battCost, netCost, structCost, wireCost, installCost, miscCost, totalCost,
+    sumDaily, winDaily, avgDaily, annualUnits, monthly,
+    currentMonthlyBill, currentYearlyBill, remainingUnits, afterSolarBill,
+    monthlySaving, yearlySaving, excessUnits, netMeterGain, totalYearBenefit,
+    paybackMonths, roi25yr, yearlyBenefits, avgMonthlyProduction,
+  };
+
+  renderResults();
+  renderAnalysis();
+  switchTab('results');
+}
+
+// ════════════════════════════════════════
+//  RENDER RESULTS
+// ════════════════════════════════════════
+function renderResults() {
+  const r = calcResult;
+  const s = r.state;
+
+  document.getElementById('resultsContent').innerHTML = `
+    <!-- STATS ROW -->
+    <div class="section-title">System Overview — ${r.city.name} · ${s.systemKW} kW ${r.panel.name}</div>
+    <div class="grid-4" style="margin-bottom:24px;">
+      <div class="stat-card">
+        <div class="stat-label">Total System Cost</div>
+        <div class="stat-value">${formatM(r.totalCost)}</div>
+        <div class="stat-unit">PKR (May 2026)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Daily Production</div>
+        <div class="stat-value">${r.avgDaily.toFixed(1)}</div>
+        <div class="stat-unit">units/day (avg)</div>
+        <div class="stat-sub">☀️ ${r.sumDaily.toFixed(1)} summer · 🌤️ ${r.winDaily.toFixed(1)} winter</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Annual Production</div>
+        <div class="stat-value">${Math.round(r.annualUnits).toLocaleString()}</div>
+        <div class="stat-unit">kWh per year</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Monthly Saving</div>
+        <div class="stat-value">${formatM(r.monthlySaving)}</div>
+        <div class="stat-unit">PKR vs WAPDA</div>
+        <div class="stat-sub">🟢 ${formatM(r.yearlySaving)}/year</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- COST BREAKDOWN -->
+      <div class="card">
+        <div class="card-title">💰 Cost Breakdown</div>
+        <table class="breakdown-table">
+          <tr><td><span class="item-icon">🔆</span>Solar Panels (${r.watts.toLocaleString()}W × PKR ${Math.round(r.panel.pricePerW * s.panelQuality)}/W${s.panelQuality !== 1.0 ? ` · ${getQualityLabel(s.panelQuality)}` : ''})</td><td>${formatPKR(r.panelCost)}</td></tr>
+          <tr><td><span class="item-icon">⚡</span>Inverter — ${r.inv.name}${s.inverterQuality !== 1.0 ? ` · ${getQualityLabel(s.inverterQuality)}` : ''}</td><td>${formatPKR(r.invCost)}</td></tr>
+          ${r.battCost ? `<tr><td><span class="item-icon">🔋</span>Battery Bank (${s.battCount}× ${r.batt.name}${s.batteryQuality !== 1.0 ? ` · ${getQualityLabel(s.batteryQuality)}` : ''})</td><td>${formatPKR(r.battCost)}</td></tr>` : ''}
+          ${r.structCost ? `<tr><td><span class="item-icon">🏗️</span>Structure & Mounting${s.installQuality !== 1.0 ? ` · ${getQualityLabel(s.installQuality)}` : ''}</td><td>${formatPKR(r.structCost)}</td></tr>` : ''}
+          ${r.wireCost ? `<tr><td><span class="item-icon">🔌</span>DC Wiring & Cables${s.installQuality !== 1.0 ? ` · ${getQualityLabel(s.installQuality)}` : ''}</td><td>${formatPKR(r.wireCost)}</td></tr>` : ''}
+          ${r.installCost ? `<tr><td><span class="item-icon">👷</span>Installation Labour${s.installQuality !== 1.0 ? ` · ${getQualityLabel(s.installQuality)}` : ''}</td><td>${formatPKR(r.installCost)}</td></tr>` : ''}
+          <tr><td><span class="item-icon">📦</span>Misc (transport, connectors)</td><td>${formatPKR(r.miscCost)}</td></tr>
+          ${r.netCost ? `<tr><td><span class="item-icon">🔁</span>Net Metering Registration</td><td>${formatPKR(r.netCost)}</td></tr>` : ''}
+          <tr class="total"><td>TOTAL INVESTMENT</td><td>${formatPKR(r.totalCost)}</td></tr>
+        </table>
+      </div>
+
+      <!-- PRODUCTION TABLE -->
+      <div class="card">
+        <div class="card-title">📅 Monthly Production Estimate</div>
+        <table class="sun-table">
+          <tr><th>Month</th><th>Units (kWh)</th><th>Saving (PKR)</th><th>Equiv WAPDA</th></tr>
+          ${r.monthly.map((u, i) => {
+            const wapda = r.currentMonthlyBill * (u / r.avgMonthlyProduction);
+            return `<tr>
+              <td>${MONTHS[i]}</td>
+              <td class="sun-highlight">${Math.round(u)}</td>
+              <td style="color:var(--green);font-family:'IBM Plex Mono',monospace;font-weight:600;">${formatPKR(Math.min(r.monthlySaving * (u/r.avgMonthlyProduction), r.currentMonthlyBill))}</td>
+              <td style="color:var(--muted);font-family:'IBM Plex Mono',monospace;">${Math.round(u)} units</td>
+            </tr>`;
+          }).join('')}
+          <tr style="border-top:1px solid var(--amber-dim);">
+            <td style="font-weight:700;">YEARLY</td>
+            <td class="sun-highlight" style="font-weight:700;">${Math.round(r.annualUnits).toLocaleString()}</td>
+            <td style="color:var(--green);font-family:'IBM Plex Mono',monospace;font-weight:700;">${formatPKR(r.yearlySaving)}</td>
+            <td style="color:var(--muted);font-size:11px;">vs WAPDA bill</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- MONTHLY CHART -->
+    <div class="card mt-4">
+      <div class="card-title">📊 Monthly Units — Solar vs WAPDA Consumption</div>
+      <div class="monthly-chart">
+        <div class="chart-bars" id="monthlyBars"></div>
+        <div class="chart-legend">
+          <span><span class="legend-dot" style="background:var(--amber)"></span>Solar Production</span>
+          <span><span class="legend-dot" style="background:var(--blue)"></span>WAPDA Consumption</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYBACK SNAPSHOT -->
+    <div class="card mt-4">
+      <div class="card-title">⏱️ Payback Period — Quick View</div>
+      <div class="grid-3">
+        <div>
+          <div class="stat-label">Estimated Payback</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:36px;color:var(--amber);font-weight:700;">${typeof r.paybackMonths === 'number' ? r.paybackMonths : r.paybackMonths}<span style="font-size:14px;color:var(--muted);margin-left:4px;">mo</span></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;">${typeof r.paybackMonths === 'number' ? `≈ ${Math.floor(r.paybackMonths/12)} years ${r.paybackMonths%12} months` : 'Over 30 years'} · With 5% annual tariff escalation</div>
+        </div>
+        <div>
+          <div class="stat-label">25-Year Net Profit</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:24px;color:var(--green);font-weight:700;">${formatPKR(r.yearlyBenefits[24]?.cumulative - r.totalCost)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;">After recovering investment</div>
+        </div>
+        <div>
+          <div class="stat-label">25-Year ROI</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:36px;color:var(--green);font-weight:700;">${r.roi25yr}<span style="font-size:14px;margin-left:2px;">%</span></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;">Return on investment</div>
+        </div>
+      </div>
+      <div class="payback-vis" style="margin-top:16px;">
+        <div class="payback-fill" style="width:${Math.min(100, (typeof r.paybackMonths==='number' ? r.paybackMonths/300*100 : 100))}%">
+          <span>${typeof r.paybackMonths === 'number' ? `${r.paybackMonths} months` : '>30 yrs'}</span>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px;">
+        <span>Install (Month 0)</span><span>Year 10</span><span>Year 20</span><span>Year 25</span>
+      </div>
+    </div>
+  `;
+
+  // Draw chart bars
+  setTimeout(() => {
+    const container = document.getElementById('monthlyBars');
+    if (!container) return;
+    const maxU = Math.max(...r.monthly, r.wapdaUnits || 1);
+    const wapdaM = s.wapdaUnits;
+    container.innerHTML = r.monthly.map((u, i) => {
+      const solH = Math.round((u / maxU) * 120);
+      const wapH = Math.round((wapdaM / maxU) * 120);
+      return `
+        <div class="chart-bar-wrap">
+          <div style="display:flex;align-items:flex-end;gap:2px;height:130px;">
+            <div class="chart-bar bar-solar" style="height:${solH}px;flex:1;" title="${Math.round(u)} kWh"></div>
+            <div class="chart-bar bar-wapda" style="height:${wapH}px;flex:1;" title="${wapdaM} kWh"></div>
+          </div>
+          <div class="chart-label">${MONTHS[i]}</div>
+        </div>
+      `;
+    }).join('');
+  }, 50);
+}
+
+// ════════════════════════════════════════
+//  RENDER ANALYSIS
+// ════════════════════════════════════════
+function renderAnalysis() {
+  const r = calcResult;
+  const s = r.state;
+
+  // Payback chart data (cumulative savings)
+  const chartData = r.yearlyBenefits.slice(0, 25);
+  const maxCum    = chartData[24].cumulative;
+  const breakEvenYear = typeof r.paybackMonths === 'number' ? Math.ceil(r.paybackMonths / 12) : 25;
+
+  document.getElementById('analysisContent').innerHTML = `
+    <div class="section-title">Financial Analysis — ${r.city.name} · ${s.systemKW}kW System</div>
+
+    <div class="grid-2" style="margin-bottom:20px;">
+      <!-- KEY METRICS -->
+      <div class="card">
+        <div class="card-title">📊 Key Financial Metrics</div>
+        <div class="metric-row">
+          <div class="metric-name">Total Investment</div>
+          <div class="metric-val warn">${formatPKR(r.totalCost)}</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-name">Monthly Bill Saving</div>
+          <div class="metric-val good">− ${formatPKR(r.monthlySaving)}/mo</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-name">Annual Bill Saving</div>
+          <div class="metric-val good">− ${formatPKR(r.yearlySaving)}/yr</div>
+        </div>
+        ${r.netMeterGain*12 > 0 ? `<div class="metric-row">
+          <div class="metric-name">Net Metering Annual Income (${Math.round(r.excessUnits*12)} units)</div>
+          <div class="metric-val good">+ ${formatPKR(r.netMeterGain*12)}/yr</div>
+        </div>` : ''}
+        <div class="metric-row">
+          <div class="metric-name">Total Year 1 Benefit</div>
+          <div class="metric-val good">${formatPKR(r.totalYearBenefit)}</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-name">Payback Period (5% tariff escalation)</div>
+          <div class="metric-val ${typeof r.paybackMonths==='number' && r.paybackMonths<=96?'good':r.paybackMonths<=144?'warn':'bad'}">${typeof r.paybackMonths === 'number' ? r.paybackMonths + ' months' : r.paybackMonths}</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);padding:0 10px;">${typeof r.paybackMonths === 'number' ? `≈ ${Math.floor(r.paybackMonths/12)} years ${r.paybackMonths%12} months` : ''}</div>
+        <div class="metric-row">
+          <div class="metric-name">25-Year Gross Saving</div>
+          <div class="metric-val good">${formatPKR(r.yearlyBenefits[24]?.cumulative)}</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-name">25-Year Net Profit (after investment)</div>
+          <div class="metric-val good">${formatPKR(r.yearlyBenefits[24]?.cumulative - r.totalCost)}</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-name">25-Year ROI</div>
+          <div class="metric-val good">${r.roi25yr}%</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-name">CO₂ Offset (annual)</div>
+          <div class="metric-val good">${(r.annualUnits * 0.44 / 1000).toFixed(1)} tonnes</div>
+        </div>
+      </div>
+
+      <!-- BILL COMPARISON -->
+      <div class="card">
+        <div class="card-title">⚡ Bill Comparison</div>
+        <div class="metric-row">
+          <div class="metric-name">Monthly WAPDA Bill (current)</div>
+          <div class="metric-val bad">${formatPKR(r.currentMonthlyBill)}</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-name">After Solar Monthly Bill</div>
+          <div class="metric-val good">${formatPKR(r.afterSolarBill)}</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-name">Monthly Units Consumed</div>
+          <div class="metric-val">${s.wapdaUnits} kWh</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-name">Avg Monthly Solar Production</div>
+          <div class="metric-val good">${Math.round(r.avgMonthlyProduction)} kWh</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-name">Remaining WAPDA Units</div>
+          <div class="metric-val warn">${Math.round(r.remainingUnits)} kWh</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-name">Solar Coverage</div>
+          <div class="metric-val good">${Math.min(100, Math.round(r.avgMonthlyProduction/s.wapdaUnits*100))}%</div>
+        </div>
+        ${r.excessUnits > 0 ? `
+        <div class="metric-row">
+          <div class="metric-name">Excess (net-metering eligible)</div>
+          <div class="metric-val good">${Math.round(r.excessUnits)} kWh/mo</div>
+        </div>` : ''}
+
+        <div style="margin-top:16px;">
+          <div class="stat-label">Bill Reduction</div>
+          <div class="payback-vis">
+            <div class="payback-fill" style="width:${Math.min(100, Math.round(r.monthlySaving/r.currentMonthlyBill*100))}%;background:linear-gradient(90deg,var(--green),var(--amber));">
+              <span>${Math.min(100,Math.round(r.monthlySaving/r.currentMonthlyBill*100))}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUMULATIVE SAVINGS CHART -->
+    <div class="card">
+      <div class="card-title">📈 Cumulative Savings vs Investment (25 Years)</div>
+      <div style="position:relative;height:200px;padding:10px 4px 30px;">
+        <svg width="100%" height="100%" viewBox="0 0 800 170" preserveAspectRatio="none" id="savingsChart" style="overflow:visible;"></svg>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);padding:0 4px;margin-top:4px;">
+          ${Array.from({length:6},(_,i)=>`<span>Year ${i*5}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- YEARLY BREAKDOWN TABLE -->
+    <div class="card mt-4">
+      <div class="card-title">📅 Year-by-Year Benefit Table (first 15 years)</div>
+      <table class="slab-table">
+        <tr><th>Year</th><th>Annual Benefit</th><th>Cumulative Saving</th><th>Net Position</th><th>Status</th></tr>
+        ${r.yearlyBenefits.slice(0,15).map(y => {
+          const net = y.cumulative - r.totalCost;
+          return `<tr ${y.year === breakEvenYear ? 'class="active-slab"' : ''}>
+            <td>${y.year}</td>
+            <td style="color:var(--green);font-family:'IBM Plex Mono',monospace;">${formatPKR(y.benefit)}</td>
+            <td style="font-family:'IBM Plex Mono',monospace;">${formatPKR(y.cumulative)}</td>
+            <td style="font-family:'IBM Plex Mono',monospace;color:${net>=0?'var(--green)':'var(--red)'};">${net>=0?'+':''}${formatPKR(net)}</td>
+            <td style="font-size:11px;">${net>=0?'✅ Profitable':'⏳ Recovering'}</td>
+          </tr>`;
+        }).join('')}
+      </table>
+    </div>
+
+    <!-- ASSUMPTIONS -->
+    <div class="info-box mt-4">
+      <b>Assumptions & Notes:</b> 
+      WAPDA bills calculated with ACTUAL Pakistan 2026 costs including FPA (~PKR 10/unit), GST 17.5%, income tax, QTA, fixed charges — bills are 2.4–2.8× base tariff rates. 
+      System efficiency derate 78% (temperature 15% + soiling 3% + wiring 2% + inverter 2%). 
+      WAPDA tariff escalation 5%/yr. Panel degradation 0.5%/yr not included. Battery replacement at year 10–12 (lithium) or year 5–7 (lead-acid) not included.
+      Net metering buy-back at PKR 23/unit. Installation in ${r.city.name}. Prices benchmarked May 2026.
+      Actual results may vary ±15% depending on installer, brand, roof orientation, load pattern, and monthly FPA variations.
+    </div>
+  `;
+
+  // Draw SVG chart
+  setTimeout(() => drawSavingsChart(r), 100);
+}
+
+function drawSavingsChart(r) {
+  const svg = document.getElementById('savingsChart');
+  if (!svg) return;
+
+  const W = 800, H = 170;
+  const data = r.yearlyBenefits.slice(0, 25);
+  const maxY = data[24].cumulative * 1.05;
+  const investLine = (1 - r.totalCost / maxY) * H;
+
+  // Grid lines
+  let svgContent = '';
+  for (let i = 0; i <= 4; i++) {
+    const y = H - (i / 4) * H;
+    svgContent += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="var(--border)" stroke-width="0.5"/>`;
+    svgContent += `<text x="2" y="${y-3}" fill="var(--muted)" font-size="9" font-family="IBM Plex Mono">${formatM(maxY * i/4)}</text>`;
+  }
+
+  // Investment line
+  svgContent += `<line x1="0" y1="${investLine}" x2="${W}" y2="${investLine}" stroke="var(--red)" stroke-width="1" stroke-dasharray="4,3"/>`;
+  svgContent += `<text x="${W-80}" y="${investLine-5}" fill="var(--red)" font-size="9" font-family="IBM Plex Mono">Investment</text>`;
+
+  // Savings area
+  const pts = data.map((d, i) => {
+    const x = (i / 24) * W;
+    const y = H - (d.cumulative / maxY) * H;
+    return `${x},${y}`;
+  });
+  const areaPath = `M0,${H} L0,${H - (data[0].cumulative/maxY)*H} ${pts.join(' L')} L${W},${H} Z`;
+  svgContent += `<path d="${areaPath}" fill="url(#savingsGrad)" opacity="0.5"/>`;
+
+  // Line
+  svgContent += `<polyline points="${pts.join(' ')}" fill="none" stroke="var(--amber)" stroke-width="2.5"/>`;
+
+  // Breakeven dot
+  if (typeof r.paybackMonths === 'number' && r.paybackMonths <= 300) {
+    const paybackYears = r.paybackMonths / 12;
+    const bx = ((paybackYears-1) / 24) * W;
+    const by = investLine;
+    svgContent += `<circle cx="${bx}" cy="${by}" r="6" fill="var(--green)" stroke="var(--bg)" stroke-width="2"/>`;
+    svgContent += `<text x="${bx+10}" y="${by-6}" fill="var(--green)" font-size="10" font-family="IBM Plex Mono" font-weight="bold">${r.paybackMonths}mo</text>`;
+  }
+
+  svgContent = `<defs><linearGradient id="savingsGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--amber)" stop-opacity="0.6"/><stop offset="100%" stop-color="var(--amber)" stop-opacity="0.05"/></linearGradient></defs>` + svgContent;
+  svg.innerHTML = svgContent;
+}
+
+// ════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════
+function formatPKR(n) {
+  if (n === undefined || n === null || isNaN(n)) return '—';
+  return 'PKR ' + Math.round(n).toLocaleString('en-PK');
+}
+function formatM(n) {
+  if (!n) return '0';
+  if (n >= 1e7) return (n/1e7).toFixed(1)+'Cr';
+  if (n >= 1e5) return (n/1e5).toFixed(1)+'L';
+  if (n >= 1e3) return (n/1e3).toFixed(0)+'K';
+  return Math.round(n).toString();
+}
+function formatPrice(n) {
+  return 'PKR ' + n.toLocaleString();
+}
+
+function getQualityLabel(val) {
+  if (val < 0.85) return 'Budget';
+  if (val < 0.95) return 'Budget+';
+  if (val < 1.05) return 'Standard';
+  if (val < 1.15) return 'Standard+';
+  if (val < 1.25) return 'Premium';
+  return 'Premium+';
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.getAttribute('onclick').includes(id)) b.classList.add('active');
+  });
+}
+
+// ════════════════════════════════════════
+//  KICK OFF
+// ════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
